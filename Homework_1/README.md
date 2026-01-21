@@ -1,5 +1,32 @@
 # Cracking a Substitution Cipher
 
+## File structure 
+
+- `hw1.cpp`: Contains all the code for the analysis 
+- `cipher.txt`: Contains the ciphertext that needs to be converted into plaintext
+- `english_quadgrams`: Contains the quadgrams statistics obtained by [1]
+
+## Running the code 
+
+Step 1: Compile the code: 
+```bash 
+g++ -std=c++17 -O3 -march=native -flto -funroll-loops -DNDEBUG hw1.cpp -o solver
+```
+Step 2: execute the code:
+``` bash 
+./solver
+```
+
+## Performance Analysis
+To test the performance on your machine run the following command: 
+```bash 
+#if not installed 
+sudo apt-get update 
+sudo apt install hyperfine 
+hyperfine -w 2 -r 50 './solver'
+```
+
+
 
 ## Information theory primer 
 To crack a substitution cipher, we start by relying on the fact that written text is highly predictable. This is due to the fact that the *entropy* (a measure of randomness) in natural language is typically low.
@@ -10,7 +37,7 @@ $$
 H = - \sum_{x \in X} p(x) \log p(x)
 $$
 
-However, natural language cannot be accurately modeled as a memoryless source. Instead, we use the definition of **N-gram entropy** (or conditional entropy), as discussed in [1]:
+However, natural language cannot be accurately modeled as a memoryless source. Instead, we use the definition of **N-gram entropy** (or conditional entropy), as discussed in [2]:
 
 $$
 \begin{aligned}
@@ -44,6 +71,49 @@ By using Quadgrams, we capture the **conditional dependencies** of the languageâ
 
 Therefore, minimizing the **Cross-Entropy** of the Quadgram distribution ensures we are not just matching letter counts, but correctly reconstructing the sequential statistical structure of the English language.
 
+### From Theory to Implementation: Log-Likelihood
+
+While Information Theory suggests minimizing Cross-Entropy to break the cipher, our implementation maximizes the **Log-Likelihood** score. This approach is mathematically rigorous and computationally superior.
+
+#### 1. Mathematical Equivalence (The Proof)
+We can prove that maximizing Likelihood is identical to minimizing Cross-Entropy by examining their definitions.
+
+Let $P$ be the empirical distribution of quadgrams in our decrypted text, and $Q$ be the standard distribution of English quadgrams (our model).
+
+1.  **Cross-Entropy ($H$)** is defined formally as:
+    $$H(P, Q) = - \sum_{x} P(x) \log Q(x)$$
+    Where the summation is over all unique quadgrams $x$.
+
+2.  **Log-Likelihood ($\mathcal{L}$)** of the text sequence $T$ (of length $N$) given model $Q$ is:
+    $$\mathcal{L}(T) = \sum_{i=1}^{N} \log Q(q_i)$$
+
+Since the empirical probability $P(x)$ of a quadgram is simply its count in the text divided by the text length ($Count(x)/N$), we can rewrite the Likelihood sum by grouping identical quadgrams:
+
+$$
+\begin{aligned}
+\mathcal{L}(T) &= \sum_{x} Count(x) \log Q(x) \\
+&= N \sum_{x} \frac{Count(x)}{N} \log Q(x) \\
+&= N \sum_{x} P(x) \log Q(x)
+\end{aligned}
+$$
+
+Substituting this back into the definition of Cross-Entropy (1):
+
+$$H(P, Q) = - \frac{1}{N} \mathcal{L}(T)$$
+
+This proves the direct relationship:
+$$\text{maximize } \mathcal{L}(T) \iff \text{minimize } H(P, Q)$$
+
+#### 2. Computational Speed
+Using Log-Likelihood transforms the problem from expensive multiplications into fast additions. 
+
+Calculating raw probability involves multiplying thousands of small numbers:
+$$P(T) = Q(q_1) \cdot Q(q_2) \cdot ... \cdot Q(q_N)$$
+
+By applying logarithms, we convert this into a sum:
+$$\log P(T) = \log Q(q_1) + \log Q(q_2) + ... + \log Q(q_N)$$
+
+
 ## Generating the mapping 
 
 In order to generate a proper mapping, we face a combinatorial explosion. A simple substitution cipher has a key space of $26!$ (approximately $4 \times 10^{26}$) possible permutations, making a brute-force search computationally impossible.
@@ -70,4 +140,6 @@ A significant limitation of standard Hill Climbing is its tendency to get trappe
 To mitigate this, we employ a **Random Restart** strategy. Instead of running the algorithm once, we run the Hill Climbing process multiple times starting from completely different random initial keys. Since the landscape of the cost function is complex, different starting points will converge to different local optima. By selecting the result with the global minimum Cross-Entropy across all runs, we maximize the probability of finding the correct solution.
 
 ## References 
-[1] "Prediction and Entropy of Printed English" By C.E. Shannon
+[1] J. Lyons, "Quadgram Statistics as a Fitness Measure," Practical Cryptography, 2012. [Online]. Available: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/. [Accessed: Jan. 20, 2026].
+
+[2] "Prediction and Entropy of Printed English" By C.E. Shannon
