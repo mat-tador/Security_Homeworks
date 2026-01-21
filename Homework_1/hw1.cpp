@@ -13,9 +13,29 @@
 #include <limits>
 #include <cctype> 
 #include <iomanip>
+#include <chrono>
+
+struct Timer {
+    std::chrono::_V2::system_clock::time_point start, end; 
+    std::chrono::duration<float> duration; 
+    std::string function_name; 
+
+    Timer(std::string name){
+        function_name = name; 
+        start = std::chrono::high_resolution_clock::now(); 
+    }
+    ~Timer(){
+        end = std::chrono::high_resolution_clock::now(); 
+        duration = end-start; 
+        std::cout << function_name << "took: " << duration.count() * 1000 << "ms\n"; 
+    }
+
+}; 
 
 // Generic file reading function
 std::ifstream read_file(std::string filename){
+
+    Timer timer = Timer("read_file"); 
     std::ifstream inputfile; 
     inputfile.open("./" + filename); 
     if (!inputfile.is_open()){
@@ -27,6 +47,7 @@ std::ifstream read_file(std::string filename){
 // Function to read quadgrams
 std::tuple<std::unordered_map<std::string, double>, long long>
 read_quadgrams(std::string filename){
+    Timer timer = Timer("read_quad_grams"); 
     std::ifstream inputfile = read_file(filename); 
     std::string line; 
     std::string quad_gram; 
@@ -55,6 +76,7 @@ read_quadgrams(std::string filename){
 
 // Function to read the ciphertext
 std::string read_cipher(std::string filename){
+    Timer timer = Timer("read_cipher"); 
     std::string cipher{}; 
     std::ifstream inputfile = read_file(filename); 
     
@@ -70,6 +92,7 @@ std::string read_cipher(std::string filename){
  
 // Function to create a random key 
 std::unordered_map<char, char> random_mapping(){
+    
     std::vector<char> plain(26); 
     std::iota(plain.begin(), plain.end(), 'A');
 
@@ -86,10 +109,7 @@ std::unordered_map<char, char> random_mapping(){
     return key_map; 
 }
 
-// --- OPTIMIZED LOG LIKELIHOOD ---
-// 1. Pass text by const reference (already done, good)
-// 2. Avoid substr() to prevent memory allocation
-// 3. Use find() instead of count() + at()
+// function to computer log likelihood 
 double log_likelihood(const std::unordered_map<std::string, double>& quad_dict, const std::string& text){
     double score = 0.0;
     const double penalty = -20.0; 
@@ -97,15 +117,11 @@ double log_likelihood(const std::unordered_map<std::string, double>& quad_dict, 
     
     if (len < 4) return score;
 
-    // Reuse this single string buffer for the whole loop
-    // This avoids creating thousands of string objects
     std::string quad(4, ' '); 
     
-    // Cache the end iterator so we don't look it up every time
     auto end_iter = quad_dict.end();
 
     for (size_t i = 0; i < len - 3; ++i) {
-        // Manually update the buffer instead of creating a new substring
         quad[0] = text[i];
         quad[1] = text[i+1];
         quad[2] = text[i+2];
@@ -128,6 +144,7 @@ void hill_climbing(int steps,
                 const std::string& cipher, 
                 const std::unordered_map<std::string, double>& dict){
 
+    Timer timer = Timer("hill climbing"); 
     std::unordered_map<char, char> best_global_mapping; 
     double best_global_score = -std::numeric_limits<double>::infinity();
 
@@ -160,8 +177,7 @@ void hill_climbing(int steps,
             // Swap in Map
             std::swap(current_key[a], current_key[b]);
 
-            // Full decryption is expensive, but sticking to your structure:
-            // We overwrite the existing string rather than += appending
+            
             for (size_t k = 0; k < cipher.size(); ++k) {
                 decryption[k] = current_key[cipher[k]];
             }
@@ -206,7 +222,7 @@ int main(){
         auto [quad_dict, total_quad] = read_quadgrams("english_quadgrams.txt"); 
         std::cout << "Quadgrams loaded successfully." << std::endl; 
 
-        int steps = 4000; 
+        int steps = 8000; 
         int restarts = 20; 
         
         hill_climbing(steps, restarts, ciphertext, quad_dict); 
