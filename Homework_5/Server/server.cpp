@@ -1,4 +1,5 @@
 #include "server.h"
+#include <cstring>
 
 // Handles client communication
 void handleClient(int clientSocket) {

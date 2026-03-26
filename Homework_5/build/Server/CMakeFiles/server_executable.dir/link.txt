@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/server_executable.dir/server.cpp.o CMakeFiles/server_executable.dir/main.cpp.o CMakeFiles/server_executable.dir/__/Common/common.cpp.o  -o server_executable  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 
