@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/mattiafiore/Desktop/security/Homework_6/Common/common.h
+iostream
+-
+unistd.h
+-
+arpa/inet.h
+-
+sys/socket.h
+-
+openssl/evp.h
+-
+string
+-
+
+/home/mattiafiore/Desktop/security/Homework_6/Server/server.cpp
+server.h
+/home/mattiafiore/Desktop/security/Homework_6/Server/server.h
+iomanip
+-
+openssl/dh.h
+-
+openssl/rand.h
+-
+cstring
+-
+
+/home/mattiafiore/Desktop/security/Homework_6/Server/server.h
+../Common/common.h
+/home/mattiafiore/Desktop/security/Homework_6/Common/common.h
+

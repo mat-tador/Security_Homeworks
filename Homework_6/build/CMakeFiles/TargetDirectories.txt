@@ -1,0 +1,8 @@
+/home/mattiafiore/Desktop/security/Homework_6/build/CMakeFiles/rebuild_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/CMakeFiles/edit_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Client/CMakeFiles/rebuild_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Client/CMakeFiles/edit_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Client/CMakeFiles/client_executable.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Server/CMakeFiles/rebuild_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Server/CMakeFiles/edit_cache.dir
+/home/mattiafiore/Desktop/security/Homework_6/build/Server/CMakeFiles/server_executable.dir
